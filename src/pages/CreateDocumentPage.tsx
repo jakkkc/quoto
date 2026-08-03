@@ -202,7 +202,7 @@ export default function CreateDocumentPage({
                 No clients yet — add a client first before creating a document.
               </p>
             ) : (
-              <Select value={clientId} onValueChange={setClientId}>
+              <Select value={clientId} onValueChange={(value) => setClientId(value ?? '')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a client" />
                 </SelectTrigger>
