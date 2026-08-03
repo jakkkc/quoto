@@ -15,8 +15,10 @@ import { Button } from '@/components/ui/button'
 
 export default function DocumentsListPage({
   onNewDocument,
+  onOpenDocument,
 }: {
   onNewDocument: () => void
+  onOpenDocument: (id: string) => void
 }) {
   const [documents, setDocuments] = useState<DocumentWithClient[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,11 +70,16 @@ export default function DocumentsListPage({
               <TableHead>Status</TableHead>
               <TableHead>Issue Date</TableHead>
               <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {documents.map((doc) => (
-              <TableRow key={doc.id}>
+              <TableRow
+                key={doc.id}
+                className="cursor-pointer"
+                onClick={() => onOpenDocument(doc.id)}
+              >
                 <TableCell className="font-medium">{doc.doc_number}</TableCell>
                 <TableCell className="capitalize">{doc.type}</TableCell>
                 <TableCell>{doc.clients?.name ?? '—'}</TableCell>
@@ -83,6 +90,18 @@ export default function DocumentsListPage({
                 </TableCell>
                 <TableCell>{doc.issue_date}</TableCell>
                 <TableCell className="text-right">{doc.total.toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation() // don't double-trigger the row click
+                      onOpenDocument(doc.id)
+                    }}
+                  >
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
