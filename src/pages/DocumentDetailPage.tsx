@@ -279,6 +279,17 @@ export default function DocumentDetailPage({
           )}
         </PDFDownloadLink>
 
+        <Button
+          variant="outline"
+          onClick={() => {
+            const url = `${window.location.origin}/share/${doc.share_token}`
+            navigator.clipboard.writeText(url)
+            alert("Share link copied to clipboard:\n" + url)
+          }}
+        >
+          Copy Share Link
+        </Button>
+
         {transitions.map((status) => (
           <Button
             key={status}

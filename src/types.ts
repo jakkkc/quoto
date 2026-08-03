@@ -28,6 +28,7 @@ export interface Document {
   tax_amount: number
   total: number
   notes: string | null
+  client_notes: string | null
   share_token: string
   created_at: string
   updated_at: string
