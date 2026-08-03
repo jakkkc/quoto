@@ -30,6 +30,8 @@ export interface Document {
   notes: string | null
   client_notes: string | null
   share_token: string
+  vat_enabled: boolean
+  owner_unread: boolean
   created_at: string
   updated_at: string
 }
@@ -47,4 +49,11 @@ export interface DocumentItem {
 // Joined shape used in list views
 export interface DocumentWithClient extends Document {
   clients: { name: string } | null
+}
+
+export interface DocumentMessage {
+  id: string
+  sender: 'owner' | 'client'
+  message: string
+  created_at: string
 }

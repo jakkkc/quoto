@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Document, DocumentItem, DocumentStatus, Client } from '@/types'
+import type { Document, DocumentItem, DocumentStatus, Client, DocumentMessage } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import { DocumentPDF } from '@/components/DocumentPDF'
@@ -15,8 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-// Valid next statuses per current status + document type.
-// Keeps the transition rules in one place rather than scattered through JSX.
 function nextStatuses(type: Document['type'], status: DocumentStatus): DocumentStatus[] {
   if (status === 'draft') return ['sent']
   if (status === 'sent' && type === 'quote') return ['accepted', 'rejected']
@@ -37,6 +36,9 @@ export default function DocumentDetailPage({
   const [businessName, setBusinessName] = useState<string>('')
   const [client, setClient] = useState<Client | null>(null)
   const [items, setItems] = useState<DocumentItem[]>([])
+  const [messages, setMessages] = useState<DocumentMessage[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [sendingMessage, setSendingMessage] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updating, setUpdating] = useState(false)
@@ -58,7 +60,7 @@ export default function DocumentDetailPage({
     }
     setDoc(docData as Document)
 
-    const [{ data: clientData }, { data: itemsData, error: itemsError }, { data: businessData }] =
+    const [{ data: clientData }, { data: itemsData, error: itemsError }, { data: businessData }, { data: messagesData }] =
       await Promise.all([
         supabase.from('clients').select('*').eq('id', docData.client_id).single(),
         supabase
@@ -67,12 +69,23 @@ export default function DocumentDetailPage({
           .eq('document_id', documentId)
           .order('sort_order'),
         supabase.from('businesses').select('name').eq('id', docData.business_id).single(),
+        supabase
+          .from('document_messages')
+          .select('*')
+          .eq('document_id', documentId)
+          .order('created_at'),
       ])
 
     setClient((clientData as Client) ?? null)
     setBusinessName(businessData?.name ?? '')
     if (itemsError) setError(itemsError.message)
     else setItems((itemsData as DocumentItem[]) ?? [])
+    setMessages((messagesData as DocumentMessage[]) ?? [])
+
+    // Clear the unread flag now that the owner has opened this document.
+    if (docData.owner_unread) {
+      await supabase.from('documents').update({ owner_unread: false }).eq('id', documentId)
+    }
 
     setLoading(false)
   }
@@ -132,6 +145,7 @@ export default function DocumentDetailPage({
         tax_amount: doc.tax_amount,
         total: doc.total,
         notes: doc.notes,
+        vat_enabled: doc.vat_enabled,
       })
       .select()
       .single()
@@ -162,6 +176,28 @@ export default function DocumentDetailPage({
 
     setUpdating(false)
     onConverted(newDoc.id)
+  }
+
+  async function handleSendMessage() {
+    if (!doc || !newMessage.trim()) return
+    setSendingMessage(true)
+    setError(null)
+
+    const { error } = await supabase.from('document_messages').insert({
+      document_id: doc.id,
+      sender: 'owner',
+      message: newMessage.trim(),
+    })
+
+    setSendingMessage(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setNewMessage('')
+    fetchAll()
   }
 
   if (loading) {
@@ -244,7 +280,7 @@ export default function DocumentDetailPage({
                 <span>{doc.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tax</span>
+                <span>VAT (16%){!doc.vat_enabled && ' — off'}</span>
                 <span>{doc.tax_amount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold">
@@ -264,6 +300,49 @@ export default function DocumentDetailPage({
           <CardContent className="text-sm">{doc.notes}</CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Conversation</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {messages.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No messages yet.</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`text-sm p-2 rounded-md max-w-[80%] ${
+                    msg.sender === 'owner'
+                      ? 'bg-primary/10 ml-auto text-right'
+                      : 'bg-muted'
+                  }`}
+                >
+                  <p className="text-xs text-muted-foreground mb-0.5 capitalize">
+                    {msg.sender} · {new Date(msg.created_at).toLocaleString()}
+                  </p>
+                  <p>{msg.message}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Write a message to the client..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSendMessage()
+              }}
+            />
+            <Button onClick={handleSendMessage} disabled={sendingMessage || !newMessage.trim()}>
+              Send
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex flex-wrap gap-2 justify-end items-center">
         <PDFDownloadLink
@@ -304,7 +383,7 @@ export default function DocumentDetailPage({
 
         {doc.type === 'quote' && doc.status === 'accepted' && (
           <Button disabled={updating} onClick={handleConvertToInvoice}>
-            Convert to Invoice
+            Convert to Invoice (manual)
           </Button>
         )}
       </div>

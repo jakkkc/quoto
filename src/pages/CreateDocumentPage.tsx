@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+const VAT_RATE = 0.16
+
 interface LineItem {
-  key: string // local-only, for React list keys
+  key: string
   description: string
   quantity: number
   unit_price: number
@@ -41,6 +43,7 @@ export default function CreateDocumentPage({
   const [clientId, setClientId] = useState<string>('')
   const [type, setType] = useState<DocumentType>('quote')
   const [notes, setNotes] = useState('')
+  const [vatEnabled, setVatEnabled] = useState(true)
   const [items, setItems] = useState<LineItem[]>([emptyLineItem()])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -86,7 +89,7 @@ export default function CreateDocumentPage({
   }
 
   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0)
-  const taxAmount = 0 // v1: no tax handling yet
+  const taxAmount = vatEnabled ? subtotal * VAT_RATE : 0
   const total = subtotal + taxAmount
 
   async function handleSave() {
@@ -104,8 +107,6 @@ export default function CreateDocumentPage({
 
     setSaving(true)
 
-    // Retry loop: if doc_number collides with the unique constraint,
-    // regenerate and try again (rare, but possible under concurrent saves).
     const MAX_ATTEMPTS = 5
     let lastError: string | null = null
 
@@ -124,15 +125,15 @@ export default function CreateDocumentPage({
           tax_amount: taxAmount,
           total,
           notes: notes.trim() || null,
+          vat_enabled: vatEnabled,
         })
         .select()
         .single()
 
       if (docError) {
-        // Postgres unique_violation error code
         if (docError.code === '23505') {
           lastError = docError.message
-          continue // retry with a freshly generated number
+          continue
         }
         setError(docError.message)
         setSaving(false)
@@ -221,6 +222,15 @@ export default function CreateDocumentPage({
             <Label htmlFor="notes">Notes</Label>
             <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={vatEnabled}
+              onChange={(e) => setVatEnabled(e.target.checked)}
+            />
+            Apply VAT (16%)
+          </label>
         </CardContent>
       </Card>
 
@@ -289,7 +299,7 @@ export default function CreateDocumentPage({
                 <span>{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tax</span>
+                <span>VAT (16%){!vatEnabled && ' — off'}</span>
                 <span>{taxAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold">
