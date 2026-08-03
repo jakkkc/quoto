@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { statusClassName } from '@/lib/statusColors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -178,7 +179,7 @@ export default function PublicDocumentView() {
         <h1 className="text-2xl font-semibold">
           {title} {doc.doc_number}
         </h1>
-        <Badge variant="outline" className="capitalize">{finalStatus}</Badge>
+        <Badge variant="outline" className={`capitalize ${statusClassName(finalStatus)}`}>{finalStatus}</Badge>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

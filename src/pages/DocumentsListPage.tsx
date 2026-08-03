@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { statusClassName } from '@/lib/statusColors'
 import { Button } from '@/components/ui/button'
 
 export default function DocumentsListPage({
@@ -95,7 +96,7 @@ export default function DocumentsListPage({
                 <TableCell className="capitalize">{doc.type}</TableCell>
                 <TableCell>{doc.clients?.name ?? '—'}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="capitalize">
+                  <Badge variant="outline" className={`capitalize ${statusClassName(doc.status)}`}>
                     {doc.status}
                   </Badge>
                 </TableCell>

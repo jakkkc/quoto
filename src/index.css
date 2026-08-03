@@ -1,13 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/inter";
+@import "@fontsource/oswald/300.css";
+@import "@fontsource/oswald/400.css";
+@import "@fontsource/oswald/500.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-heading: 'Oswald', sans-serif;
+    --font-sans: 'Inter Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,72 +52,63 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* Brand: dark luxury, disciplined two-accent system */
+    --brand-blue: #3b82f6;
+    --brand-pink: #f472b6;
+
+    --background: #0a0a12;
+    --foreground: #f5f3fa;
+    --card: rgba(255, 255, 255, 0.05);
+    --card-foreground: #f5f3fa;
+    --popover: #100e1c;
+    --popover-foreground: #f5f3fa;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.08);
+    --secondary-foreground: #f5f3fa;
+    --muted: rgba(255, 255, 255, 0.06);
+    --muted-foreground: rgba(245, 243, 250, 0.6);
+    --accent: rgba(255, 255, 255, 0.08);
+    --accent-foreground: #f5f3fa;
+    --destructive: #f43f5e;
+    --border: rgba(255, 255, 255, 0.12);
+    --input: rgba(255, 255, 255, 0.08);
+    --ring: #f472b6;
+    --chart-1: #3b82f6;
+    --chart-2: #f472b6;
+    --chart-3: #60a5fa;
+    --chart-4: #f9a8d4;
+    --chart-5: rgba(255, 255, 255, 0.4);
+    --radius: 0.75rem;
+    --sidebar: #100e1c;
+    --sidebar-foreground: #f5f3fa;
+    --sidebar-primary: #3b82f6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(255, 255, 255, 0.08);
+    --sidebar-accent-foreground: #f5f3fa;
+    --sidebar-border: rgba(255, 255, 255, 0.12);
+    --sidebar-ring: #f472b6;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #0a0a12;
+    --foreground: #f5f3fa;
+    --card: rgba(255, 255, 255, 0.05);
+    --card-foreground: #f5f3fa;
+    --popover: #100e1c;
+    --popover-foreground: #f5f3fa;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.08);
+    --secondary-foreground: #f5f3fa;
+    --muted: rgba(255, 255, 255, 0.06);
+    --muted-foreground: rgba(245, 243, 250, 0.6);
+    --accent: rgba(255, 255, 255, 0.08);
+    --accent-foreground: #f5f3fa;
+    --destructive: #f43f5e;
+    --border: rgba(255, 255, 255, 0.12);
+    --input: rgba(255, 255, 255, 0.08);
+    --ring: #f472b6;
 }
 
 @layer base {
@@ -122,9 +116,39 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    background: linear-gradient(180deg, #0a0a12 0%, #0c0a18 100%);
+    background-attachment: fixed;
+    @apply text-foreground;
     }
   html {
     @apply font-sans;
     }
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    }
 }
+
+/* Glassmorphism: applied globally to shadcn's card/popover/dialog/select
+   surfaces via their data-slot attributes, so every component built on
+   these primitives (Card, Dialog, Select, Table wrapper) picks up the
+   frosted-glass look automatically without per-file edits. */
+[data-slot="card"],
+[data-slot="dialog-content"],
+[data-slot="popover-content"],
+[data-slot="select-content"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-slot="table-row"]:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Status accent bar utility - a thin colored left border for status-driven cards */
+.accent-bar-blue { border-left: 3px solid var(--brand-blue); }
+.accent-bar-pink { border-left: 3px solid var(--brand-pink); }

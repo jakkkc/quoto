@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import type { Document, DocumentItem, DocumentStatus, Client, DocumentMessage } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { statusClassName } from '@/lib/statusColors'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PDFDownloadLink } from '@react-pdf/renderer'
@@ -220,7 +221,7 @@ export default function DocumentDetailPage({
         <Button variant="outline" size="sm" onClick={onBack}>
           ← Back to Documents
         </Button>
-        <Badge variant="outline" className="capitalize">{doc.status}</Badge>
+        <Badge variant="outline" className={`capitalize ${statusClassName(doc.status)}`}>{doc.status}</Badge>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
