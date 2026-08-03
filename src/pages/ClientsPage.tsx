@@ -117,52 +117,80 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Clients</h1>
+        <h1 className="text-xl sm:text-2xl">Clients</h1>
         <Button onClick={openAddDialog}>Add Client</Button>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 mb-4">{error}</p>
-      )}
+      {error && <p className="text-sm text-rose-400 mb-4">{error}</p>}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading clients...</p>
       ) : clients.length === 0 ? (
-        <div className="border rounded-lg p-8 text-center text-muted-foreground">
+        <div className="border border-white/10 rounded-2xl p-8 text-center text-muted-foreground bg-white/[0.03]">
           <p>No clients yet — add your first client to get started.</p>
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* Desktop: table */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>{client.email || '—'}</TableCell>
+                    <TableCell>{client.phone || '—'}</TableCell>
+                    <TableCell>{client.address || '—'}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => openEditDialog(client)}>
+                        Edit
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(client.id)}>
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile: cards */}
+          <div className="sm:hidden space-y-3">
             {clients.map((client) => (
-              <TableRow key={client.id}>
-                <TableCell className="font-medium">{client.name}</TableCell>
-                <TableCell>{client.email || '—'}</TableCell>
-                <TableCell>{client.phone || '—'}</TableCell>
-                <TableCell>{client.address || '—'}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => openEditDialog(client)}>
+              <div
+                key={client.id}
+                className="rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-xl p-4"
+              >
+                <p className="font-medium mb-1">{client.name}</p>
+                <div className="text-sm text-muted-foreground space-y-0.5">
+                  {client.email && <p>{client.email}</p>}
+                  {client.phone && <p>{client.phone}</p>}
+                  {client.address && <p>{client.address}</p>}
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditDialog(client)}>
                     Edit
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(client.id)}>
+                  <Button variant="destructive" size="sm" className="flex-1" onClick={() => handleDelete(client.id)}>
                     Delete
                   </Button>
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
