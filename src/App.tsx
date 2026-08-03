@@ -28,7 +28,14 @@ function App() {
 
   return (
     <div>
-      <nav className="border-b p-3 flex gap-2 justify-between max-w-4xl mx-auto">
+      <nav className="border-b border-white/10 backdrop-blur-md bg-white/[0.03] p-3 flex items-center justify-between max-w-4xl mx-auto">
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="Jac's Hub" className="h-7 w-7 rounded-full object-cover" />
+          <span className="font-heading text-sm uppercase tracking-widest text-foreground/90">
+            Quoto
+          </span>
+        </div>
+
         <div className="flex gap-2">
           <Button
             variant={view.name === 'documents' || view.name === 'document-detail' ? 'default' : 'outline'}
@@ -45,6 +52,7 @@ function App() {
             Clients
           </Button>
         </div>
+
         <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
           Log out
         </Button>
