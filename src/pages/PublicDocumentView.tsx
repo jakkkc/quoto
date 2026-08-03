@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,8 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-// Shape returned by the get_shared_document RPC (subset of the full
-// Document type — no business_id/client_id exposed to anonymous callers).
 interface SharedDocument {
   id: string
   type: 'quote' | 'invoice'
@@ -28,6 +26,7 @@ interface SharedDocument {
   tax_amount: number
   total: number
   notes: string | null
+  vat_enabled: boolean
 }
 
 interface SharedItem {
@@ -39,15 +38,27 @@ interface SharedItem {
   sort_order: number
 }
 
+interface SharedMessage {
+  id: string
+  sender: 'owner' | 'client'
+  message: string
+  created_at: string
+}
+
 export default function PublicDocumentView() {
   const { token } = useParams<{ token: string }>()
+  const navigate = useNavigate()
+
   const [doc, setDoc] = useState<SharedDocument | null>(null)
   const [items, setItems] = useState<SharedItem[]>([])
+  const [messages, setMessages] = useState<SharedMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const [note, setNote] = useState('')
+  const [newMessage, setNewMessage] = useState('')
   const [responding, setResponding] = useState(false)
+  const [sendingMessage, setSendingMessage] = useState(false)
   const [responded, setResponded] = useState<'accepted' | 'rejected' | null>(null)
 
   async function fetchDoc() {
@@ -55,11 +66,15 @@ export default function PublicDocumentView() {
     setLoading(true)
     setError(null)
 
-    const [{ data: docData, error: docError }, { data: itemsData, error: itemsError }] =
-      await Promise.all([
-        supabase.rpc('get_shared_document', { token }).single(),
-        supabase.rpc('get_shared_document_items', { token }),
-      ])
+    const [
+      { data: docData, error: docError },
+      { data: itemsData, error: itemsError },
+      { data: messagesData },
+    ] = await Promise.all([
+      supabase.rpc('get_shared_document', { token }).single(),
+      supabase.rpc('get_shared_document_items', { token }),
+      supabase.rpc('get_shared_document_messages', { token }),
+    ])
 
     if (docError) {
       setError('This link is invalid or the document could not be found.')
@@ -70,6 +85,7 @@ export default function PublicDocumentView() {
     setDoc(docData as SharedDocument)
     if (itemsError) setError(itemsError.message)
     else setItems((itemsData as SharedItem[]) ?? [])
+    setMessages((messagesData as SharedMessage[]) ?? [])
 
     setLoading(false)
   }
@@ -83,7 +99,7 @@ export default function PublicDocumentView() {
     if (!token) return
     const confirmed = window.confirm(
       newStatus === 'accepted'
-        ? 'Accept this quote?'
+        ? 'Accept this quote? This will generate an invoice.'
         : 'Reject this quote? This cannot be undone.'
     )
     if (!confirmed) return
@@ -91,7 +107,7 @@ export default function PublicDocumentView() {
     setResponding(true)
     setError(null)
 
-    const { error } = await supabase.rpc('respond_to_shared_document', {
+    const { data, error } = await supabase.rpc('respond_to_shared_document', {
       token,
       new_status: newStatus,
       note: note.trim() || null,
@@ -105,6 +121,36 @@ export default function PublicDocumentView() {
     }
 
     setResponded(newStatus)
+    setNote('')
+
+    // On acceptance, the function returns the new invoice's share_token —
+    // send the client straight there so they can see their invoice.
+    if (newStatus === 'accepted' && data) {
+      setTimeout(() => {
+        navigate(`/share/${data}`)
+      }, 1500)
+    }
+  }
+
+  async function handleSendMessage() {
+    if (!token || !newMessage.trim()) return
+    setSendingMessage(true)
+    setError(null)
+
+    const { error } = await supabase.rpc('post_shared_message', {
+      token,
+      message_text: newMessage.trim(),
+    })
+
+    setSendingMessage(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setNewMessage('')
+    fetchDoc()
   }
 
   if (loading) {
@@ -170,7 +216,7 @@ export default function PublicDocumentView() {
                 <span>{doc.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tax</span>
+                <span>VAT (16%){!doc.vat_enabled && ' — off'}</span>
                 <span>{doc.tax_amount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold">
@@ -191,6 +237,49 @@ export default function PublicDocumentView() {
         </Card>
       )}
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Conversation</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {messages.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No messages yet.</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`text-sm p-2 rounded-md max-w-[80%] ${
+                    msg.sender === 'client'
+                      ? 'bg-primary/10 ml-auto text-right'
+                      : 'bg-muted'
+                  }`}
+                >
+                  <p className="text-xs text-muted-foreground mb-0.5 capitalize">
+                    {msg.sender} · {new Date(msg.created_at).toLocaleString()}
+                  </p>
+                  <p>{msg.message}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Write a message..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSendMessage()
+              }}
+            />
+            <Button onClick={handleSendMessage} disabled={sendingMessage || !newMessage.trim()}>
+              Send
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {awaitingResponse && (
         <Card>
           <CardHeader>
@@ -198,7 +287,7 @@ export default function PublicDocumentView() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <Label htmlFor="note">Add a note (optional)</Label>
+              <Label htmlFor="note">Add a note with your response (optional)</Label>
               <Input
                 id="note"
                 value={note}
@@ -222,7 +311,12 @@ export default function PublicDocumentView() {
         </Card>
       )}
 
-      {responded && (
+      {responded === 'accepted' && (
+        <p className="text-sm text-muted-foreground text-center">
+          Accepted — redirecting you to your invoice...
+        </p>
+      )}
+      {responded === 'rejected' && (
         <p className="text-sm text-muted-foreground text-center">
           Thanks — your response has been recorded.
         </p>
