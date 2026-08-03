@@ -4,6 +4,8 @@ import type { Document, DocumentItem, DocumentStatus, Client } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import { DocumentPDF } from '@/components/DocumentPDF'
 import {
   Table,
   TableBody,
@@ -32,6 +34,7 @@ export default function DocumentDetailPage({
   onConverted: (newDocumentId: string) => void
 }) {
   const [doc, setDoc] = useState<Document | null>(null)
+  const [businessName, setBusinessName] = useState<string>('')
   const [client, setClient] = useState<Client | null>(null)
   const [items, setItems] = useState<DocumentItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,16 +58,19 @@ export default function DocumentDetailPage({
     }
     setDoc(docData as Document)
 
-    const [{ data: clientData }, { data: itemsData, error: itemsError }] = await Promise.all([
-      supabase.from('clients').select('*').eq('id', docData.client_id).single(),
-      supabase
-        .from('document_items')
-        .select('*')
-        .eq('document_id', documentId)
-        .order('sort_order'),
-    ])
+    const [{ data: clientData }, { data: itemsData, error: itemsError }, { data: businessData }] =
+      await Promise.all([
+        supabase.from('clients').select('*').eq('id', docData.client_id).single(),
+        supabase
+          .from('document_items')
+          .select('*')
+          .eq('document_id', documentId)
+          .order('sort_order'),
+        supabase.from('businesses').select('name').eq('id', docData.business_id).single(),
+      ])
 
     setClient((clientData as Client) ?? null)
+    setBusinessName(businessData?.name ?? '')
     if (itemsError) setError(itemsError.message)
     else setItems((itemsData as DocumentItem[]) ?? [])
 
@@ -110,7 +116,6 @@ export default function DocumentDetailPage({
     setUpdating(true)
     setError(null)
 
-    // Generate the new invoice's doc_number the same way CreateDocumentPage does.
     const { generateDocNumber } = await import('@/lib/docNumber')
     const docNumber = await generateDocNumber(doc.business_id, 'invoice')
 
@@ -260,7 +265,20 @@ export default function DocumentDetailPage({
         </Card>
       )}
 
-      <div className="flex flex-wrap gap-2 justify-end">
+      <div className="flex flex-wrap gap-2 justify-end items-center">
+        <PDFDownloadLink
+          document={
+            <DocumentPDF doc={doc} items={items} client={client} businessName={businessName} />
+          }
+          fileName={`${doc.doc_number}.pdf`}
+        >
+          {({ loading: pdfLoading }) => (
+            <Button variant="outline" disabled={pdfLoading}>
+              {pdfLoading ? 'Preparing PDF...' : 'Download PDF'}
+            </Button>
+          )}
+        </PDFDownloadLink>
+
         {transitions.map((status) => (
           <Button
             key={status}
@@ -273,7 +291,7 @@ export default function DocumentDetailPage({
           </Button>
         ))}
 
-        {doc.type === 'quote' && doc.status === 'accepted' && !doc.converted_from_id && (
+        {doc.type === 'quote' && doc.status === 'accepted' && (
           <Button disabled={updating} onClick={handleConvertToInvoice}>
             Convert to Invoice
           </Button>
