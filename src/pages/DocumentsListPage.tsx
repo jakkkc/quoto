@@ -64,6 +64,7 @@ export default function DocumentsListPage({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead></TableHead>
               <TableHead>Number</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Client</TableHead>
@@ -80,7 +81,17 @@ export default function DocumentsListPage({
                 className="cursor-pointer"
                 onClick={() => onOpenDocument(doc.id)}
               >
-                <TableCell className="font-medium">{doc.doc_number}</TableCell>
+                <TableCell>
+                  {doc.owner_unread && (
+                    <span
+                      className="inline-block w-2 h-2 rounded-full bg-blue-600"
+                      title="New activity"
+                    />
+                  )}
+                </TableCell>
+                <TableCell className="font-medium">
+                  {doc.owner_unread ? <strong>{doc.doc_number}</strong> : doc.doc_number}
+                </TableCell>
                 <TableCell className="capitalize">{doc.type}</TableCell>
                 <TableCell>{doc.clients?.name ?? '—'}</TableCell>
                 <TableCell>
@@ -95,7 +106,7 @@ export default function DocumentsListPage({
                     variant="outline"
                     size="sm"
                     onClick={(e) => {
-                      e.stopPropagation() // don't double-trigger the row click
+                      e.stopPropagation()
                       onOpenDocument(doc.id)
                     }}
                   >

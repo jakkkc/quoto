@@ -27,6 +27,7 @@ interface SharedDocument {
   total: number
   notes: string | null
   vat_enabled: boolean
+  business_name: string
 }
 
 interface SharedItem {
@@ -161,12 +162,18 @@ export default function PublicDocumentView() {
 
   if (!doc) return null
 
-  const title = doc.type === 'quote' ? 'Quote' : 'Invoice'
+  const isReceipt = doc.type === 'invoice' && doc.status === 'paid'
+  const title = isReceipt ? 'Receipt' : doc.type === 'quote' ? 'Quote' : 'Invoice'
   const awaitingResponse = doc.type === 'quote' && doc.status === 'sent' && !responded
   const finalStatus = responded ?? doc.status
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
+      <div>
+        <p className="text-sm text-muted-foreground">From</p>
+        <p className="text-lg font-semibold">{doc.business_name}</p>
+      </div>
+
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
           {title} {doc.doc_number}
