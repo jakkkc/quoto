@@ -123,8 +123,6 @@ export default function PublicDocumentView() {
     setResponded(newStatus)
     setNote('')
 
-    // On acceptance, the function returns the new invoice's share_token —
-    // send the client straight there so they can see their invoice.
     if (newStatus === 'accepted' && data) {
       setTimeout(() => {
         navigate(`/share/${data}`)
@@ -182,6 +180,48 @@ export default function PublicDocumentView() {
         Issued {doc.issue_date}
         {doc.due_date ? ` · Due ${doc.due_date}` : ''}
       </p>
+
+      {awaitingResponse && (
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <CardTitle className="text-base">This quote needs your response</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <Label htmlFor="note">Add a note with your response (optional)</Label>
+              <Input
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Any comments about this quote..."
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                disabled={responding}
+                onClick={() => handleRespond('rejected')}
+              >
+                Reject
+              </Button>
+              <Button disabled={responding} onClick={() => handleRespond('accepted')}>
+                Accept
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {responded === 'accepted' && (
+        <p className="text-sm text-center bg-green-50 text-green-700 rounded-md p-3">
+          Accepted — redirecting you to your invoice...
+        </p>
+      )}
+      {responded === 'rejected' && (
+        <p className="text-sm text-center bg-muted rounded-md p-3">
+          Thanks — your response has been recorded.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
@@ -279,48 +319,6 @@ export default function PublicDocumentView() {
           </div>
         </CardContent>
       </Card>
-
-      {awaitingResponse && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Your Response</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label htmlFor="note">Add a note with your response (optional)</Label>
-              <Input
-                id="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Any comments about this quote..."
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                disabled={responding}
-                onClick={() => handleRespond('rejected')}
-              >
-                Reject
-              </Button>
-              <Button disabled={responding} onClick={() => handleRespond('accepted')}>
-                Accept
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {responded === 'accepted' && (
-        <p className="text-sm text-muted-foreground text-center">
-          Accepted — redirecting you to your invoice...
-        </p>
-      )}
-      {responded === 'rejected' && (
-        <p className="text-sm text-muted-foreground text-center">
-          Thanks — your response has been recorded.
-        </p>
-      )}
     </div>
   )
 }
