@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ParticleTrail } from '@/components/ParticleTrail'
 
 export default function AuthPage() {
   const [email, setEmail] = useState('')
@@ -20,19 +20,24 @@ export default function AuthPage() {
 
     setLoading(false)
     if (error) setError(error.message)
-    // On success, onAuthStateChange in useAuth picks up the new session
-    // automatically and App.tsx re-renders past this screen.
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign in to Quoto</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      <ParticleTrail />
+
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="flex flex-col items-center mb-8">
+          <img src="/logo.png" alt="Jac's Hub" className="h-14 w-14 rounded-full object-cover mb-3" />
+          <h1 className="font-heading text-2xl uppercase tracking-widest text-foreground">
+            Quoto
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to your workspace</p>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-xl p-6 shadow-2xl shadow-black/40">
           <form onSubmit={handleLogin} className="space-y-4">
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-rose-400">{error}</p>}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -57,8 +62,8 @@ export default function AuthPage() {
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
