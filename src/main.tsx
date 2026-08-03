@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import PublicDocumentView from '@/pages/PublicDocumentView'
-import { ensureDevSession } from './lib/devAuth'
 
 function Root() {
   return (
@@ -17,12 +16,8 @@ function Root() {
   )
 }
 
-ensureDevSession()
-  .catch((err) => console.error('Dev sign-in failed:', err))
-  .finally(() => {
-    createRoot(document.getElementById('root')!).render(
-      <StrictMode>
-        <Root />
-      </StrictMode>,
-    )
-  })
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <Root />
+  </StrictMode>,
+)

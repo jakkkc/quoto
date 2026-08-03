@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import AuthPage from '@/pages/AuthPage'
 import ClientsPage from '@/pages/ClientsPage'
 import DocumentsListPage from '@/pages/DocumentsListPage'
 import CreateDocumentPage from '@/pages/CreateDocumentPage'
@@ -12,24 +15,38 @@ type View =
   | { name: 'document-detail'; id: string }
 
 function App() {
+  const { user, loading } = useAuth()
   const [view, setView] = useState<View>({ name: 'documents' })
+
+  if (loading) {
+    return <p className="p-6 text-sm text-muted-foreground text-center">Loading...</p>
+  }
+
+  if (!user) {
+    return <AuthPage />
+  }
 
   return (
     <div>
-      <nav className="border-b p-3 flex gap-2 max-w-4xl mx-auto">
-        <Button
-          variant={view.name === 'documents' || view.name === 'document-detail' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setView({ name: 'documents' })}
-        >
-          Documents
-        </Button>
-        <Button
-          variant={view.name === 'clients' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setView({ name: 'clients' })}
-        >
-          Clients
+      <nav className="border-b p-3 flex gap-2 justify-between max-w-4xl mx-auto">
+        <div className="flex gap-2">
+          <Button
+            variant={view.name === 'documents' || view.name === 'document-detail' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setView({ name: 'documents' })}
+          >
+            Documents
+          </Button>
+          <Button
+            variant={view.name === 'clients' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setView({ name: 'clients' })}
+          >
+            Clients
+          </Button>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+          Log out
         </Button>
       </nav>
 
