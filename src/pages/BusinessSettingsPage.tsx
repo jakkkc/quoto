@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CURRENT_BUSINESS_ID } from '@/lib/constants'
+import { useBusiness } from '@/contexts/BusinessContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function BusinessSettingsPage() {
+  const { businessId, refresh: refreshBusiness } = useBusiness()
   const [name, setName] = useState('')
   const [paymentDetails, setPaymentDetails] = useState('')
   const [loading, setLoading] = useState(true)
@@ -20,7 +21,7 @@ export default function BusinessSettingsPage() {
       const { data, error } = await supabase
         .from('businesses')
         .select('name, payment_details')
-        .eq('id', CURRENT_BUSINESS_ID)
+        .eq('id', businessId)
         .single()
 
       if (error) {
@@ -42,13 +43,14 @@ export default function BusinessSettingsPage() {
     const { error } = await supabase
       .from('businesses')
       .update({ name: name.trim(), payment_details: paymentDetails.trim() || null })
-      .eq('id', CURRENT_BUSINESS_ID)
+      .eq('id', businessId)
 
     setSaving(false)
     if (error) {
       setError(error.message)
       return
     }
+    await refreshBusiness()
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }

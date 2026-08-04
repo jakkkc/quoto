@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CURRENT_BUSINESS_ID } from '@/lib/constants'
+import { useBusiness } from '@/contexts/BusinessContext'
 import type { DocumentWithClient } from '@/types'
 import {
   Table,
@@ -21,6 +21,7 @@ export default function DocumentsListPage({
   onNewDocument: () => void
   onOpenDocument: (id: string) => void
 }) {
+  const { businessId } = useBusiness()
   const [documents, setDocuments] = useState<DocumentWithClient[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,7 +32,7 @@ export default function DocumentsListPage({
     const { data, error } = await supabase
       .from('documents')
       .select('*, clients(name)')
-      .eq('business_id', CURRENT_BUSINESS_ID)
+      .eq('business_id', businessId)
       .order('created_at', { ascending: false })
 
     if (error) {

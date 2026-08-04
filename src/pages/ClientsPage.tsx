@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CURRENT_BUSINESS_ID } from '@/lib/constants'
+import { useBusiness } from '@/contexts/BusinessContext'
 import type { Client, ClientInput } from '@/types'
 import {
   Table,
@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label'
 const emptyForm: ClientInput = { name: '', email: '', phone: '', address: '' }
 
 export default function ClientsPage() {
+  const { businessId } = useBusiness()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +40,7 @@ export default function ClientsPage() {
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('business_id', CURRENT_BUSINESS_ID)
+      .eq('business_id', businessId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -80,7 +81,7 @@ export default function ClientsPage() {
     setError(null)
 
     const payload = {
-      business_id: CURRENT_BUSINESS_ID,
+      business_id: businessId,
       name: form.name.trim(),
       email: form.email?.trim() || null,
       phone: form.phone?.trim() || null,

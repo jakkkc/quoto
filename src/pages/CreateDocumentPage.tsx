@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CURRENT_BUSINESS_ID } from '@/lib/constants'
+import { useBusiness } from '@/contexts/BusinessContext'
 import { generateDocNumber } from '@/lib/docNumber'
 import type { Client, DocumentType } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,7 @@ export default function CreateDocumentPage({
 }: {
   onSaved: () => void
 }) {
+  const { businessId } = useBusiness()
   const [clients, setClients] = useState<Client[]>([])
   const [loadingClients, setLoadingClients] = useState(true)
   const [clientId, setClientId] = useState<string>('')
@@ -54,7 +55,7 @@ export default function CreateDocumentPage({
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('business_id', CURRENT_BUSINESS_ID)
+        .eq('business_id', businessId)
         .order('name')
 
       if (error) {
@@ -111,12 +112,12 @@ export default function CreateDocumentPage({
     let lastError: string | null = null
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      const docNumber = await generateDocNumber(CURRENT_BUSINESS_ID, type)
+      const docNumber = await generateDocNumber(businessId!, type)
 
       const { data: doc, error: docError } = await supabase
         .from('documents')
         .insert({
-          business_id: CURRENT_BUSINESS_ID,
+          business_id: businessId,
           client_id: clientId,
           type,
           status: 'draft',
