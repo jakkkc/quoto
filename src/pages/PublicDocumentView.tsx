@@ -29,6 +29,8 @@ interface SharedDocument {
   notes: string | null
   vat_enabled: boolean
   business_name: string
+  amount_paid: number
+  client_name: string
 }
 
 interface SharedItem {
@@ -178,6 +180,8 @@ export default function PublicDocumentView() {
       <div>
         <p className="text-sm text-muted-foreground">From</p>
         <p className="text-lg font-semibold">{doc.business_name}</p>
+        <p className="text-sm text-muted-foreground mt-2">Bill To</p>
+        <p className="text-base font-medium">{doc.client_name}</p>
       </div>
 
       <div className="flex items-center justify-between">
@@ -298,6 +302,18 @@ export default function PublicDocumentView() {
                 <span>Total</span>
                 <span>{doc.total.toFixed(2)}</span>
               </div>
+              {doc.type === 'invoice' && doc.amount_paid > 0 && (
+                <>
+                  <div className="flex justify-between text-emerald-400">
+                    <span>Amount Paid</span>
+                    <span>{doc.amount_paid.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <span>{(doc.total - doc.amount_paid) > 0 ? 'Balance Due' : (doc.total - doc.amount_paid) < 0 ? 'Overpaid' : 'Balance'}</span>
+                    <span>{Math.abs(doc.total - doc.amount_paid).toFixed(2)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </CardContent>

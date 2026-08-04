@@ -330,8 +330,8 @@ export default function DocumentDetailPage({
                     <span>{doc.amount_paid.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-semibold">
-                    <span>Balance Due</span>
-                    <span>{balance.toFixed(2)}</span>
+                    <span>{balance > 0 ? 'Balance Due' : balance < 0 ? 'Overpaid' : 'Balance'}</span>
+                    <span>{Math.abs(balance).toFixed(2)}</span>
                   </div>
                 </>
               )}
