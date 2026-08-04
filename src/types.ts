@@ -12,7 +12,7 @@ export interface Client {
 export type ClientInput = Pick<Client, 'name' | 'email' | 'phone' | 'address'>
 
 export type DocumentType = 'quote' | 'invoice'
-export type DocumentStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'paid'
+export type DocumentStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'partially_paid' | 'paid'
 
 export interface Document {
   id: string
@@ -32,6 +32,7 @@ export interface Document {
   share_token: string
   vat_enabled: boolean
   owner_unread: boolean
+  amount_paid: number
   created_at: string
   updated_at: string
 }
