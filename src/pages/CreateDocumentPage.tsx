@@ -167,10 +167,10 @@ export default function CreateDocumentPage({
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-semibold">New {type === 'quote' ? 'Quote' : 'Invoice'}</h1>
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
+      <h1 className="text-xl sm:text-2xl">New {type === 'quote' ? 'Quote' : 'Invoice'}</h1>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-400">{error}</p>}
 
       <Card>
         <CardHeader>
@@ -238,52 +238,58 @@ export default function CreateDocumentPage({
         <CardHeader>
           <CardTitle className="text-base">Line Items</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {items.map((item) => (
-            <div key={item.key} className="grid grid-cols-12 gap-2 items-end">
-              <div className="col-span-6">
+            <div
+              key={item.key}
+              className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3 sm:border-0 sm:bg-transparent sm:p-0 sm:rounded-none sm:grid sm:grid-cols-12 sm:gap-2 sm:items-end"
+            >
+              <div className="sm:col-span-5">
                 <Label>Description</Label>
                 <Input
                   value={item.description}
                   onChange={(e) => updateItem(item.key, { description: e.target.value })}
                 />
               </div>
-              <div className="col-span-2">
-                <Label>Qty</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    updateItem(item.key, { quantity: parseFloat(e.target.value) || 0 })
-                  }
-                />
+              <div className="grid grid-cols-2 gap-3 sm:contents">
+                <div className="sm:col-span-2">
+                  <Label>Qty</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.quantity}
+                    onChange={(e) =>
+                      updateItem(item.key, { quantity: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Unit Price</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.unit_price}
+                    onChange={(e) =>
+                      updateItem(item.key, { unit_price: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </div>
               </div>
-              <div className="col-span-2">
-                <Label>Unit Price</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.unit_price}
-                  onChange={(e) =>
-                    updateItem(item.key, { unit_price: parseFloat(e.target.value) || 0 })
-                  }
-                />
-              </div>
-              <div className="col-span-1 text-sm pb-2">
-                {lineTotal(item).toFixed(2)}
-              </div>
-              <div className="col-span-1">
+              <div className="flex items-center justify-between sm:contents">
+                <span className="text-sm text-muted-foreground sm:col-span-2 sm:pb-2">
+                  Total: {lineTotal(item).toFixed(2)}
+                </span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => removeItem(item.key)}
                   disabled={items.length === 1}
+                  className="sm:col-span-1"
                 >
-                  ✕
+                  Remove
                 </Button>
               </div>
             </div>
@@ -293,7 +299,7 @@ export default function CreateDocumentPage({
           </Button>
 
           <div className="border-t pt-3 flex justify-end">
-            <div className="w-48 space-y-1 text-sm">
+            <div className="w-full sm:w-48 space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{subtotal.toFixed(2)}</span>
