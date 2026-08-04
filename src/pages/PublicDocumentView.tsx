@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { statusClassName } from '@/lib/statusColors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { statusClassName } from '@/lib/statusColors'
 import {
   Table,
   TableBody,
@@ -54,6 +54,7 @@ export default function PublicDocumentView() {
   const [doc, setDoc] = useState<SharedDocument | null>(null)
   const [items, setItems] = useState<SharedItem[]>([])
   const [messages, setMessages] = useState<SharedMessage[]>([])
+  const [convertedToken, setConvertedToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -72,10 +73,12 @@ export default function PublicDocumentView() {
       { data: docData, error: docError },
       { data: itemsData, error: itemsError },
       { data: messagesData },
+      { data: convertedTokenData },
     ] = await Promise.all([
       supabase.rpc('get_shared_document', { token }).single(),
       supabase.rpc('get_shared_document_items', { token }),
       supabase.rpc('get_shared_document_messages', { token }),
+      supabase.rpc('get_converted_document_token', { token }),
     ])
 
     if (docError) {
@@ -88,6 +91,7 @@ export default function PublicDocumentView() {
     if (itemsError) setError(itemsError.message)
     else setItems((itemsData as SharedItem[]) ?? [])
     setMessages((messagesData as SharedMessage[]) ?? [])
+    setConvertedToken((convertedTokenData as string) ?? null)
 
     setLoading(false)
   }
@@ -126,6 +130,7 @@ export default function PublicDocumentView() {
     setNote('')
 
     if (newStatus === 'accepted' && data) {
+      setConvertedToken(data)
       setTimeout(() => {
         navigate(`/share/${data}`)
       }, 1500)
@@ -158,7 +163,7 @@ export default function PublicDocumentView() {
   }
 
   if (error && !doc) {
-    return <p className="p-6 text-sm text-red-600 text-center">{error}</p>
+    return <p className="p-6 text-sm text-rose-400 text-center">{error}</p>
   }
 
   if (!doc) return null
@@ -169,25 +174,47 @@ export default function PublicDocumentView() {
   const finalStatus = responded ?? doc.status
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">From</p>
         <p className="text-lg font-semibold">{doc.business_name}</p>
       </div>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-xl sm:text-2xl">
           {title} {doc.doc_number}
         </h1>
-        <Badge variant="outline" className={`capitalize ${statusClassName(finalStatus)}`}>{finalStatus}</Badge>
+        <Badge variant="outline" className={`capitalize ${statusClassName(finalStatus)}`}>
+          {finalStatus}
+        </Badge>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-400">{error}</p>}
 
       <p className="text-sm text-muted-foreground">
         Issued {doc.issue_date}
         {doc.due_date ? ` · Due ${doc.due_date}` : ''}
       </p>
+
+      {/* Persistent banner: shows on the ORIGINAL quote's link forever,
+          even in a brand new session, pointing to whatever it was
+          converted into (invoice, and eventually that same invoice
+          once it becomes a receipt). */}
+      {doc.type === 'quote' && convertedToken && (
+        <Card className="border-2 border-emerald-400/40 bg-emerald-500/5">
+          <CardContent className="py-4 flex items-center justify-between flex-wrap gap-2">
+            <p className="text-sm">
+              This quote was accepted — your invoice is ready.
+            </p>
+            <Link
+              to={`/share/${convertedToken}`}
+              className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
+            >
+              View Invoice
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {awaitingResponse && (
         <Card className="border-2 border-primary">
@@ -221,12 +248,12 @@ export default function PublicDocumentView() {
       )}
 
       {responded === 'accepted' && (
-        <p className="text-sm text-center bg-green-50 text-green-700 rounded-md p-3">
+        <p className="text-sm text-center bg-emerald-500/10 text-emerald-300 rounded-md p-3">
           Accepted — redirecting you to your invoice...
         </p>
       )}
       {responded === 'rejected' && (
-        <p className="text-sm text-center bg-muted rounded-md p-3">
+        <p className="text-sm text-center bg-white/5 rounded-md p-3">
           Thanks — your response has been recorded.
         </p>
       )}
@@ -300,7 +327,7 @@ export default function PublicDocumentView() {
                   className={`text-sm p-2 rounded-md max-w-[80%] ${
                     msg.sender === 'client'
                       ? 'bg-primary/10 ml-auto text-right'
-                      : 'bg-muted'
+                      : 'bg-white/5'
                   }`}
                 >
                   <p className="text-xs text-muted-foreground mb-0.5 capitalize">
