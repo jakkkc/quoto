@@ -6,6 +6,7 @@ import ClientsPage from '@/pages/ClientsPage'
 import DocumentsListPage from '@/pages/DocumentsListPage'
 import CreateDocumentPage from '@/pages/CreateDocumentPage'
 import DocumentDetailPage from '@/pages/DocumentDetailPage'
+import BusinessSettingsPage from '@/pages/BusinessSettingsPage'
 import { Button } from '@/components/ui/button'
 
 type View =
@@ -13,6 +14,7 @@ type View =
   | { name: 'documents' }
   | { name: 'create-document' }
   | { name: 'document-detail'; id: string }
+  | { name: 'settings' }
 
 function App() {
   const { user, loading } = useAuth()
@@ -51,6 +53,13 @@ function App() {
           >
             Clients
           </Button>
+          <Button
+            variant={view.name === 'settings' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setView({ name: 'settings' })}
+          >
+            Settings
+          </Button>
         </div>
 
         <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
@@ -78,6 +87,8 @@ function App() {
           onConverted={(newId) => setView({ name: 'document-detail', id: newId })}
         />
       )}
+
+      {view.name === 'settings' && <BusinessSettingsPage />}
     </div>
   )
 }

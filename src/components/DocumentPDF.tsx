@@ -35,11 +35,13 @@ export function DocumentPDF({
   items,
   client,
   businessName,
+  paymentDetails,
 }: {
   doc: Document
   items: DocumentItem[]
   client: Client | null
   businessName: string
+  paymentDetails?: string | null
 }) {
   const isReceipt = doc.type === 'invoice' && doc.status === 'paid'
   const title = isReceipt ? 'Receipt' : doc.type === 'quote' ? 'Quote' : 'Invoice'
@@ -104,6 +106,12 @@ export function DocumentPDF({
           <View style={styles.notes}>
             <Text style={styles.label}>Notes</Text>
             <Text>{doc.notes}</Text>
+          </View>
+        )}
+        {doc.type === 'invoice' && paymentDetails && (
+          <View style={styles.notes}>
+            <Text style={styles.label}>Payment Details</Text>
+            <Text>{paymentDetails}</Text>
           </View>
         )}
       </Page>

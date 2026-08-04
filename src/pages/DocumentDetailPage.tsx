@@ -37,6 +37,7 @@ export default function DocumentDetailPage({
 }) {
   const [doc, setDoc] = useState<Document | null>(null)
   const [businessName, setBusinessName] = useState<string>('')
+  const [paymentDetails, setPaymentDetails] = useState<string | null>(null)
   const [client, setClient] = useState<Client | null>(null)
   const [items, setItems] = useState<DocumentItem[]>([])
   const [messages, setMessages] = useState<DocumentMessage[]>([])
@@ -73,13 +74,14 @@ export default function DocumentDetailPage({
     ] = await Promise.all([
       supabase.from('clients').select('*').eq('id', docData.client_id).single(),
       supabase.from('document_items').select('*').eq('document_id', documentId).order('sort_order'),
-      supabase.from('businesses').select('name').eq('id', docData.business_id).single(),
+      supabase.from('businesses').select('name, payment_details').eq('id', docData.business_id).single(),
       supabase.from('document_messages').select('*').eq('document_id', documentId).order('created_at'),
       supabase.from('documents').select('id').eq('converted_from_id', documentId).limit(1),
     ])
 
     setClient((clientData as Client) ?? null)
     setBusinessName(businessData?.name ?? '')
+    setPaymentDetails(businessData?.payment_details ?? null)
     if (itemsError) setError(itemsError.message)
     else setItems((itemsData as DocumentItem[]) ?? [])
     setMessages((messagesData as DocumentMessage[]) ?? [])
@@ -349,6 +351,17 @@ export default function DocumentDetailPage({
         </Card>
       )}
 
+      {doc.type === 'invoice' && paymentDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span aria-hidden="true">💳</span> Payment Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm whitespace-pre-line">{paymentDetails}</CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Conversation</CardTitle>
@@ -393,7 +406,7 @@ export default function DocumentDetailPage({
       <div className="flex flex-wrap gap-2 justify-end items-center">
         <PDFDownloadLink
           document={
-            <DocumentPDF doc={doc} items={items} client={client} businessName={businessName} />
+            <DocumentPDF doc={doc} items={items} client={client} businessName={businessName} paymentDetails={paymentDetails} />
           }
           fileName={`${doc.doc_number}.pdf`}
         >

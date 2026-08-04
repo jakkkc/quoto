@@ -31,6 +31,7 @@ interface SharedDocument {
   business_name: string
   amount_paid: number
   client_name: string
+  payment_details: string | null
 }
 
 interface SharedItem {
@@ -325,6 +326,17 @@ export default function PublicDocumentView() {
             <CardTitle className="text-base">Notes</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">{doc.notes}</CardContent>
+        </Card>
+      )}
+
+      {doc.type === 'invoice' && doc.payment_details && (doc.total - doc.amount_paid) > 0 && (
+        <Card className="border-2 border-brand-blue/30">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span aria-hidden="true">💳</span> How to Pay
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm whitespace-pre-line">{doc.payment_details}</CardContent>
         </Card>
       )}
 
