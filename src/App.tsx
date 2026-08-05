@@ -10,6 +10,7 @@ import CreateDocumentPage from '@/pages/CreateDocumentPage'
 import DocumentDetailPage from '@/pages/DocumentDetailPage'
 import BusinessSettingsPage from '@/pages/BusinessSettingsPage'
 import { Button } from '@/components/ui/button'
+import { CreatorCredit } from '@/components/CreatorCredit'
 
 type View =
   | { name: 'clients' }
@@ -113,6 +114,10 @@ function AppShell() {
       )}
 
       {view.name === 'settings' && <BusinessSettingsPage />}
+
+      <footer className="border-t border-white/10 py-4 mt-8">
+        <CreatorCredit />
+      </footer>
     </div>
   )
 }

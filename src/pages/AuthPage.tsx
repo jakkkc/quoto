@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ParticleTrail } from '@/components/ParticleTrail'
+import { CreatorCredit } from '@/components/CreatorCredit'
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -159,6 +160,10 @@ export default function AuthPage() {
               </>
             )}
           </p>
+        </div>
+
+        <div className="mt-6">
+          <CreatorCredit />
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { statusClassName } from '@/lib/statusColors'
+import { CreatorCredit } from '@/components/CreatorCredit'
 import {
   Table,
   TableBody,
@@ -382,6 +383,10 @@ export default function PublicDocumentView() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="pt-4 pb-2">
+        <CreatorCredit />
+      </div>
     </div>
   )
 }
